@@ -2,12 +2,9 @@ aiogram==2.12
 attrs==19.1.0
 aiograph==0.2
 APScheduler==3.7.0
-googletrans==4.0.0rc1
 kaleido==0.2.1
 pipdeptree==2.0.0
 plotly==4.14.3
-pre-commit==2.10.1
-psycopg2-binary==2.8.6
 pytest==6.1.2
 SQLAlchemy==1.4.1
-yfinance==0.1.55
+python-dotenv==0.16.0
