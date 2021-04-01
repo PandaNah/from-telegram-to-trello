@@ -14,5 +14,3 @@ load_dotenv()
 envSettings = GetEnv(TELEGRAM_TOKEN=os.getenv('TELEGRAM_TOKEN'),
                      ADMIN_LIST=os.getenv('ADMIN_LIST').split(', '))
 
-if __name__ == '__main__':
-    print(envSettings)
