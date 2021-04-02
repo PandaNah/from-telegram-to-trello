@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Command
 from aiogram.types import ReplyKeyboardRemove
 
-from keyboards import keyboard_with_none, keyboard_with_members
+from keyboards import keyboard_with_none, keyboard_with_members, keyboard_with_tags
 from loader import dp
 from src.states import NewTask
 
@@ -29,7 +29,7 @@ async def get_description(message: types.Message, state: FSMContext):
     description = message.text
     await state.update_data({'description': description})
     await message.answer('<b>Choose member</b>',
-                         reply_markup=keyboard_with_members)  # TODO: members keyboard
+                         reply_markup=keyboard_with_members)
     await NewTask.next()
 
 
@@ -37,7 +37,8 @@ async def get_description(message: types.Message, state: FSMContext):
 async def get_member(message: types.Message, state: FSMContext):
     member = message.text
     await state.update_data({'member': member})
-    await message.answer('<b>Select tag or input with spaces</b>')
+    await message.answer('<b>Select tag or input with spaces</b>',
+                         reply_markup=keyboard_with_tags)
     await NewTask.next()
 
 
