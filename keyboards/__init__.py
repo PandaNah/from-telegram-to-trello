@@ -1,2 +1,3 @@
 from .new_task_keyboards import keyboard_with_none
 from .new_task_keyboards import keyboard_with_members
+from .new_task_keyboards import keyboard_with_tags
