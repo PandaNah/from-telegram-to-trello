@@ -1,1 +1,2 @@
-from .new_task_keyboards import board_none
+from .new_task_keyboards import keyboard_with_none
+from .new_task_keyboards import keyboard_with_members
