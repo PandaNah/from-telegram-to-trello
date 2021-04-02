@@ -8,3 +8,4 @@ plotly==4.14.3
 pytest==6.1.2
 SQLAlchemy==1.4.1
 python-dotenv==0.16.0
+requests=2.24.0

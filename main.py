@@ -1,9 +1,9 @@
-from aiogram import executor
 import datetime
+
 from aiogram import Dispatcher
+from aiogram import executor
 
 from settings import envSettings
-from loader import dp
 
 
 async def on_startup(dp: Dispatcher):
@@ -19,6 +19,8 @@ async def on_shutdown(dp: Dispatcher):
                                   text=f'Bot stop work')
 
 if __name__ == '__main__':
+    from handlers import dp
+
     executor.start_polling(dispatcher=dp,
                            skip_updates=True,
                            on_startup=on_startup,
