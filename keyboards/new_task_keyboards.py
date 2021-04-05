@@ -1,64 +1,53 @@
 import typing
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from src.trello_boards import TrelloBoard
 from src.trello_member import TrelloMember
 
-keyboard_with_none = ReplyKeyboardMarkup(
-    keyboard=[
-        [
+
+class KeyboardBuilder:
+    def __init__(self, list_of_values: typing.List[typing.Any]):
+        self.list_of_values = list_of_values
+        self.skip_cancel_buttons = [
             KeyboardButton(text='Skip'),
             KeyboardButton(text='Cancel')
         ]
-    ],
-    resize_keyboard=True,
-    one_time_keyboard=True
-)
+
+    def create_new_keyboard(self) -> ReplyKeyboardMarkup:
+        list_of_values = self.convert_to_buttons(self.list_of_values)
+        if len(self.list_of_values) not in range(2):
+            list_of_values = self.to_table_buttons(list_of_values=list_of_values,
+                                                   n_in_row=2)
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[*list_of_values, self.skip_cancel_buttons],
+            resize_keyboard=True,
+            one_time_keyboard=True
+        )
+        return keyboard
+
+    @staticmethod
+    def to_table_buttons(list_of_values: typing.List[typing.Any], n_in_row: int = 2) -> typing.List[typing.Any]:
+        if len(list_of_values) % 2 == 0:
+            return [list_of_values[i:i + n_in_row] for i in range(0, len(list_of_values), n_in_row)]
+        else:
+            return [list_of_values[i:i + n_in_row] for i in range(0, len(list_of_values) - 1, n_in_row)] \
+                   + [[list_of_values[-1]]]
+
+    @staticmethod
+    def convert_to_buttons(list_of_values: typing.List[typing.Any]) -> typing.List[typing.Any]:
+        return [KeyboardButton(text=value) for value in list_of_values]
+
 
 Board = TrelloBoard()
 board_members = Board.get_memberships()
-
 Member = TrelloMember()
-
-
-def to_matrix(ls: typing.List[str], to_columns: int = 2):
-    assert len(ls) not in [0, 1], 'List cant be empty'
-    assert to_columns not in [0, 1,
-                              range(len(ls) // 2, len(ls))], 'Modifier to_columns should be in range(2, len(ls)//2)'
-    if len(ls) % 2 == 0:
-        return [ls[i:i + to_columns] for i in range(0, len(ls), to_columns)]
-    else:
-        return [ls[i:i + to_columns] for i in range(0, len(ls) - 1, to_columns)] + [[ls[-1]]]
-
-
 member_names = [Member.get_member(board_member.id_member).full_name for board_member in board_members]
-member_names = [KeyboardButton(text=name) for name in member_names]
-member_names = to_matrix(member_names)
-keyboard_with_members = ReplyKeyboardMarkup(
-    keyboard=[
-        *member_names,
-        [
-            KeyboardButton(text='Without worker'),
-            KeyboardButton(text='Cancel')
-        ]
-    ],
-    resize_keyboard=True,
-    one_time_keyboard=True
-)
-
 tags_colors = ['Green🟩', 'Yellow🟨', 'Orange🟧', 'Red🟥', 'Purple🟪', 'Blue🟦']
-tags_colors = [KeyboardButton(text=color) for color in tags_colors]
-tags_colors = to_matrix(ls=tags_colors, to_columns=2)
-keyboard_with_tags = ReplyKeyboardMarkup(
-    keyboard=[
-        *tags_colors,
-        [
-            KeyboardButton(text='Skip'),
-            KeyboardButton(text='Cancel')
-        ]
-    ],
-    resize_keyboard=True,
-    one_time_keyboard=True
-)
 
-if __name__ == '__main__':
-    print(tags_colors)
+keyboard_empty = KeyboardBuilder([]).create_new_keyboard()
+keyboard_with_members = KeyboardBuilder(member_names).create_new_keyboard()
+keyboard_with_tags = KeyboardBuilder(tags_colors).create_new_keyboard()
+
+if __name__ == "__main__":
+    pass
+
