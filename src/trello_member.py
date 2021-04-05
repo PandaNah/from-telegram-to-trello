@@ -1,6 +1,6 @@
 import typing
 from src.trello_base import TrelloBase
-from src.trello_dataclasses import Member
+from src.trello_dataclasses import BoardMember
 
 
 class TrelloMember(TrelloBase):
@@ -12,7 +12,7 @@ class TrelloMember(TrelloBase):
         response = self._get_response(primary_url=self.primary_url,
                                       secondary_url=id_member)
 
-        member_data: Member = Member.parse_obj(response)
+        member_data: BoardMember = BoardMember.parse_obj(response)
 
         return member_data
 

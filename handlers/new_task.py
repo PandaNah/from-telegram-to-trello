@@ -4,15 +4,25 @@ from aiogram.dispatcher.filters.builtin import Command
 from aiogram.types import ReplyKeyboardRemove
 
 from keyboards import keyboard_empty, keyboard_with_members, keyboard_with_tags
+from keyboards.new_task_keyboards import keyboard_with_lists
 from loader import dp
 from src.states import NewTask
 
 
 @dp.message_handler(Command('new_task'))
 async def create_task(message: types.Message):
-    await message.answer('<b>Input the header</b>',
-                         reply_markup=ReplyKeyboardRemove())
+    await message.answer('<b>Choose list</b>',
+                         reply_markup=keyboard_with_lists)
     await NewTask.first()
+
+
+@dp.message_handler(state=NewTask.list)
+async def get_list(message: types.Message, state: FSMContext):
+    board_list = message.text
+    await state.update_data({'list': board_list})
+    await message.answer('<b>Input header</b>',
+                         reply_markup=keyboard_empty)
+    await NewTask.next()
 
 
 @dp.message_handler(state=NewTask.header)
