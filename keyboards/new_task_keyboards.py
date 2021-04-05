@@ -1,4 +1,3 @@
-import numpy as np
 import typing
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from src.trello_boards import TrelloBoard
