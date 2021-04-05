@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Command
 from aiogram.types import ReplyKeyboardRemove
 
-from keyboards import keyboard_with_none, keyboard_with_members, keyboard_with_tags
+from keyboards import keyboard_empty, keyboard_with_members, keyboard_with_tags
 from loader import dp
 from src.states import NewTask
 
@@ -20,7 +20,7 @@ async def get_header(message: types.Message, state: FSMContext):
     header = message.text.capitalize()
     await state.update_data({'header': header})
     await message.answer('<b>Input the description</b>',
-                         reply_markup=keyboard_with_none)
+                         reply_markup=keyboard_empty)
     await NewTask.next()
 
 
