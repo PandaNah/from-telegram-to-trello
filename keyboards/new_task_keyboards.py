@@ -39,15 +39,14 @@ class KeyboardBuilder:
 
 
 Board = TrelloBoard()
+board_lists = [board_list.list_name for board_list in Board.get_lists()]
 board_members = Board.get_memberships()
 Member = TrelloMember()
-member_names = [Member.get_member(board_member.id_member).full_name for board_member in board_members]
+member_names = [Member.get_member(board_member.member_id).member_fullname for board_member in board_members]
 tags_colors = ['Green🟩', 'Yellow🟨', 'Orange🟧', 'Red🟥', 'Purple🟪', 'Blue🟦']
 
 keyboard_empty = KeyboardBuilder([]).create_new_keyboard()
+keyboard_with_lists = KeyboardBuilder(board_lists).create_new_keyboard()
 keyboard_with_members = KeyboardBuilder(member_names).create_new_keyboard()
 keyboard_with_tags = KeyboardBuilder(tags_colors).create_new_keyboard()
-
-if __name__ == "__main__":
-    pass
 

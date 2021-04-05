@@ -3,6 +3,7 @@ from aiogram.dispatcher.filters.state import StatesGroup
 
 
 class NewTask(StatesGroup):
+    list = State()
     header = State()
     description = State()
     member = State()
