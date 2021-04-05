@@ -1,4 +1,5 @@
 import typing
+import datetime
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from src.trello_boards import TrelloBoard
@@ -44,9 +45,13 @@ board_members = Board.get_memberships()
 Member = TrelloMember()
 member_names = [Member.get_member(board_member.member_id).member_fullname for board_member in board_members]
 tags_colors = ['Green🟩', 'Yellow🟨', 'Orange🟧', 'Red🟥', 'Purple🟪', 'Blue🟦']
+deadline_times = [1, 2, 5, 24, 48, 72, 96, 120]
+deadline_times = [(datetime.datetime.now() + datetime.timedelta(hours=delta)).strftime('%d.%m %H:%M')
+                  for delta in deadline_times]
 
 keyboard_empty = KeyboardBuilder([]).create_new_keyboard()
 keyboard_with_lists = KeyboardBuilder(board_lists).create_new_keyboard()
 keyboard_with_members = KeyboardBuilder(member_names).create_new_keyboard()
 keyboard_with_tags = KeyboardBuilder(tags_colors).create_new_keyboard()
+keyboard_with_deadline = KeyboardBuilder(deadline_times).create_new_keyboard()
 
