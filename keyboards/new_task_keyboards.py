@@ -28,11 +28,8 @@ class KeyboardBuilder:
 
     @staticmethod
     def to_table_buttons(list_of_values: typing.List[typing.Any], n_in_row: int = 2) -> typing.List[typing.Any]:
-        if len(list_of_values) % 2 == 0:
-            return [list_of_values[i:i + n_in_row] for i in range(0, len(list_of_values), n_in_row)]
-        else:
-            return [list_of_values[i:i + n_in_row] for i in range(0, len(list_of_values) - 1, n_in_row)] \
-                   + [[list_of_values[-1]]]
+        list_generator = (list_of_values[i:i+n_in_row] for i in range(0, len(list_of_values), n_in_row))
+        return [_ for _ in list_generator]
 
     @staticmethod
     def convert_to_buttons(list_of_values: typing.List[typing.Any]) -> typing.List[typing.Any]:

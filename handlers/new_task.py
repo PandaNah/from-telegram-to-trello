@@ -9,6 +9,11 @@ from loader import dp
 from src.states import NewTask
 
 
+"""
+Pipeline for creating New Task in Trello
+"""
+
+
 @dp.message_handler(Command('new_task'))
 async def create_task(message: types.Message):
     await message.answer('<b>Choose list</b>',
@@ -88,4 +93,5 @@ async def get_cover(message: types.Message, state: FSMContext):
     new_task_data = await state.get_data()
     await message.answer('Task created',
                          reply_markup=ReplyKeyboardRemove())
+    print(new_task_data)
     await state.finish()

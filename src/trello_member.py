@@ -6,11 +6,19 @@ from src.trello_dataclasses import BoardMember
 class TrelloMember(TrelloBase):
     def __init__(self):
         super().__init__()
+        """
+        Set primary url with 'members/'
+        """
         self.primary_url = 'members/'
 
-    def get_member(self, id_member: typing.AnyStr):
-        response = self._get_response(primary_url=self.primary_url,
-                                      secondary_url=id_member)
+    def get_member(self, member_id: typing.AnyStr) -> BoardMember:
+        """
+        Get a member by member_id
+
+        :param member_id: ID of member
+        :return: BoardMember
+        """
+        response = self._make_response(call_method='GET', primary_url=self.primary_url, secondary_url=member_id)
 
         member_data: BoardMember = BoardMember.parse_obj(response)
 
