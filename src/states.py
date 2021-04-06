@@ -3,6 +3,10 @@ from aiogram.dispatcher.filters.state import StatesGroup
 
 
 class NewTask(StatesGroup):
+    """
+    Class(Final State Machine) for creating new task
+
+    """
     list = State()
     header = State()
     description = State()
