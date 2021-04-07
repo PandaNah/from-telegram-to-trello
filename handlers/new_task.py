@@ -3,11 +3,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import Command
 from aiogram.types import ReplyKeyboardRemove
 
-from keyboards import keyboard_empty, keyboard_with_members, keyboard_with_tags, keyboard_with_deadline
+from keyboards import keyboard_empty, keyboard_with_members, keyboard_with_tags, keyboard_with_deadline, \
+    keyboard_with_position
 from keyboards.new_task_keyboards import keyboard_with_lists
 from loader import dp
 from src.states import NewTask
-
+from src.utils import reformat_and_post
 
 """
 Pipeline for creating New Task in Trello
@@ -24,7 +25,7 @@ async def create_task(message: types.Message):
 @dp.message_handler(state=NewTask.list)
 async def get_list(message: types.Message, state: FSMContext):
     board_list = message.text
-    await state.update_data({'list': board_list})
+    await state.update_data({'idList': board_list})
     await message.answer('<b>Input header</b>',
                          reply_markup=keyboard_empty)
     await NewTask.next()
@@ -33,7 +34,7 @@ async def get_list(message: types.Message, state: FSMContext):
 @dp.message_handler(state=NewTask.header)
 async def get_header(message: types.Message, state: FSMContext):
     header = message.text.capitalize()
-    await state.update_data({'header': header})
+    await state.update_data({'name': header})
     await message.answer('<b>Input the description</b>',
                          reply_markup=keyboard_empty)
     await NewTask.next()
@@ -42,7 +43,7 @@ async def get_header(message: types.Message, state: FSMContext):
 @dp.message_handler(state=NewTask.description)
 async def get_description(message: types.Message, state: FSMContext):
     description = message.text
-    await state.update_data({'description': description})
+    await state.update_data({'desc': description})
     await message.answer('<b>Choose member</b>',
                          reply_markup=keyboard_with_members)
     await NewTask.next()
@@ -51,17 +52,17 @@ async def get_description(message: types.Message, state: FSMContext):
 @dp.message_handler(state=NewTask.member)
 async def get_member(message: types.Message, state: FSMContext):
     member = message.text
-    await state.update_data({'member': member})
-    await message.answer('<b>Select tag or input with spaces</b>',
+    await state.update_data({'idMembers': member})
+    await message.answer('<b>Select tag </b>',
                          reply_markup=keyboard_with_tags)
     await NewTask.next()
 
 
 @dp.message_handler(state=NewTask.tags)
 async def get_tags(message: types.Message, state: FSMContext):
-    tags = message.text.split(' ')
-    await state.update_data({'tags': tags})
-    await message.answer('<b>Choose deadline date, or input:\n'
+    tags = message.text
+    await state.update_data({'idLabels': tags})
+    await message.answer('<b>Choose hours for work, or input:\n'
                          'in hours: %h \n'
                          'in days: %d</b>',
                          reply_markup=keyboard_with_deadline)
@@ -70,28 +71,23 @@ async def get_tags(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=NewTask.deadline)
 async def get_deadline(message: types.Message, state: FSMContext):
-    deadline = message.text.split(' ')
-    await state.update_data({'deadline': deadline})
-    await message.answer('<b>Input Urls to attachment</b>',
-                         reply_markup=keyboard_empty)
+    deadline = message.text
+    await state.update_data({'due': deadline})
+    await message.answer('<b>Choose position</b>',
+                         reply_markup=keyboard_with_position)
     await NewTask.next()
 
 
-@dp.message_handler(state=NewTask.attachment)
-async def get_attachment(message: types.Message, state: FSMContext):
-    attachment = message.text.split(' ')
-    await state.update_data({'attachment': attachment})
-    await message.answer('<b>Chose cover</b>',
-                         reply_markup=keyboard_empty)
-    await NewTask.next()
-
-
-@dp.message_handler(state=NewTask.cover)
-async def get_cover(message: types.Message, state: FSMContext):
-    cover = message.text.split(' ')
-    await state.update_data({'cover': cover})
+@dp.message_handler(state=NewTask.position)
+async def get_position(message: types.Message, state: FSMContext):
+    position = message.text
+    await state.update_data({'pos': position})
     new_task_data = await state.get_data()
     await message.answer('Task created',
                          reply_markup=ReplyKeyboardRemove())
-    print(new_task_data)
+    response_status_code, short_url = reformat_and_post(query=new_task_data)
+    if response_status_code in range(200, 300):
+        await message.answer(f'Task posted in trello:\n'
+                             f'{short_url}')
+
     await state.finish()
