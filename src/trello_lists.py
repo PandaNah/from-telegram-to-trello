@@ -6,9 +6,6 @@ from src.trello_dataclasses import BoardList
 class TrelloList(TrelloBase):
     def __init__(self):
         super().__init__()
-        """
-        Set primary url with 'lists/'
-        """
         self.primary_url = 'lists/'
 
     def get_list(self, list_id: typing.AnyStr) -> BoardList:
@@ -20,6 +17,6 @@ class TrelloList(TrelloBase):
         """
         response = self._make_response(call_method='GET', primary_url=self.primary_url, secondary_url=list_id)
 
-        board_list: BoardList = BoardList.parse_obj(response)
+        board_list: BoardList = BoardList.parse_obj(response.json())
 
         return board_list

@@ -13,5 +13,4 @@ class NewTask(StatesGroup):
     member = State()
     tags = State()
     deadline = State()
-    attachment = State()
-    cover = State()
+    position = State()

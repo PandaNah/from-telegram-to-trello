@@ -6,9 +6,6 @@ from src.trello_dataclasses import BoardMember
 class TrelloMember(TrelloBase):
     def __init__(self):
         super().__init__()
-        """
-        Set primary url with 'members/'
-        """
         self.primary_url = 'members/'
 
     def get_member(self, member_id: typing.AnyStr) -> BoardMember:
@@ -20,7 +17,7 @@ class TrelloMember(TrelloBase):
         """
         response = self._make_response(call_method='GET', primary_url=self.primary_url, secondary_url=member_id)
 
-        member_data: BoardMember = BoardMember.parse_obj(response)
+        member_data: BoardMember = BoardMember.parse_obj(response.json())
 
         return member_data
 
