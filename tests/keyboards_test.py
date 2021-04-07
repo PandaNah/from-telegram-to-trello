@@ -30,4 +30,3 @@ def test_keyboardbuilder() -> typing.NoReturn:
     assert len(test_new_keyboard_1.keyboard) == 4
     assert test_new_keyboard_1.resize_keyboard
     assert test_new_keyboard_1.one_time_keyboard
-

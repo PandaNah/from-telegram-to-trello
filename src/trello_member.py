@@ -20,4 +20,3 @@ class TrelloMember(TrelloBase):
         member_data: BoardMember = BoardMember.parse_obj(response.json())
 
         return member_data
-
