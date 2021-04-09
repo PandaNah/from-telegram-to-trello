@@ -41,6 +41,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          tags: PandaNah/FTTT:latest
 
 #        
 #  build_lint:
