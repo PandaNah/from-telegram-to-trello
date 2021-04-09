@@ -1,6 +1,6 @@
 name: PyTests
 
-on: [push]
+on: [ push ]
 
 jobs:
   build_tests:
@@ -21,6 +21,28 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pytest -v tests/
+
+  push_and_build:
+    needs: [ build_tests ]
+    name: Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout actions
+        uses: actions/checkout@v2
+      - name: Login Docker Hub
+        uses: docker/login-action@v1
+        with:
+          context: .
+          username: ${{ secrets.DOCKER_LOGIN }}
+          password: ${{ secrets.DOCKER_PWD }}
+      - name: Build Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: yokooq/from-telegram-to-trello:latest
+
 #        
 #  build_lint:
 #    name: Python Lint
