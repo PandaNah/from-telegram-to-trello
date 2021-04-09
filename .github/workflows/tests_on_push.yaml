@@ -41,7 +41,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: PandaNah/FTTT:latest
+          tags: PandaNah/from-telegram-to-trello:latest
 
 #        
 #  build_lint:
