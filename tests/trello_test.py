@@ -8,6 +8,7 @@ from src.trello_dataclasses import BoardMembership, BoardList, BoardMember, Trel
 from settings import trelloSettings
 from src.trello_lists import TrelloList
 from src.trello_member import TrelloMember
+from src.utils import ValidateAnswers
 
 
 def test_trelloboard() -> typing.NoReturn:
