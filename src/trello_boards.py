@@ -33,6 +33,7 @@ class TrelloBoard(TrelloBase):
                                        primary_url=self.primary_url,
                                        secondary_url='lists')
         board_lists: typing.List[BoardList] = [BoardList.parse_obj(board_list) for board_list in response.json()]
+
         return board_lists
 
     def get_cards(self) -> typing.List[TrelloCardBase]:

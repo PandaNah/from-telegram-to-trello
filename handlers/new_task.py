@@ -8,11 +8,20 @@ from keyboards import keyboard_empty, keyboard_with_members, keyboard_with_tags,
 from keyboards.new_task_keyboards import keyboard_with_lists
 from loader import dp
 from src.states import NewTask
-from src.utils import reformat_and_post
+from src.utils import reformat_and_post, ValidateAnswers
 
 """
 Pipeline for creating New Task in Trello
 """
+
+
+@dp.message_handler(lambda message: not ValidateAnswers.validate_list(message.text), state=NewTask.list)
+@dp.message_handler(lambda message: not ValidateAnswers.validate_member(message.text), state=NewTask.member)
+@dp.message_handler(lambda message: not ValidateAnswers.validate_tags(message.text), state=NewTask.tags)
+@dp.message_handler(lambda message: not ValidateAnswers.validate_deadline(message.text), state=NewTask.deadline)
+@dp.message_handler(lambda message: not ValidateAnswers.validate_position(message.text), state=NewTask.position)
+async def invalid_input(message: types.Message):
+    return await message.reply('Invalid input')
 
 
 @dp.message_handler(Command('new_task'))
@@ -22,7 +31,7 @@ async def create_task(message: types.Message):
     await NewTask.first()
 
 
-@dp.message_handler(state=NewTask.list)
+@dp.message_handler(lambda message: ValidateAnswers.validate_list(message.text), state=NewTask.list)
 async def get_list(message: types.Message, state: FSMContext):
     board_list = message.text
     await state.update_data({'idList': board_list})
@@ -49,7 +58,7 @@ async def get_description(message: types.Message, state: FSMContext):
     await NewTask.next()
 
 
-@dp.message_handler(state=NewTask.member)
+@dp.message_handler(lambda message: ValidateAnswers.validate_member(message.text), state=NewTask.member)
 async def get_member(message: types.Message, state: FSMContext):
     member = message.text
     await state.update_data({'idMembers': member})
@@ -58,7 +67,7 @@ async def get_member(message: types.Message, state: FSMContext):
     await NewTask.next()
 
 
-@dp.message_handler(state=NewTask.tags)
+@dp.message_handler(lambda message: ValidateAnswers.validate_tags(message.text), state=NewTask.tags)
 async def get_tags(message: types.Message, state: FSMContext):
     tags = message.text
     await state.update_data({'idLabels': tags})
@@ -69,7 +78,7 @@ async def get_tags(message: types.Message, state: FSMContext):
     await NewTask.next()
 
 
-@dp.message_handler(state=NewTask.deadline)
+@dp.message_handler(lambda message: ValidateAnswers.validate_deadline(message.text), state=NewTask.deadline)
 async def get_deadline(message: types.Message, state: FSMContext):
     deadline = message.text
     await state.update_data({'due': deadline})
@@ -78,7 +87,7 @@ async def get_deadline(message: types.Message, state: FSMContext):
     await NewTask.next()
 
 
-@dp.message_handler(state=NewTask.position)
+@dp.message_handler(lambda message: ValidateAnswers.validate_position(message.text), state=NewTask.position)
 async def get_position(message: types.Message, state: FSMContext):
     position = message.text
     await state.update_data({'pos': position})

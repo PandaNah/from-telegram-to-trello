@@ -15,7 +15,6 @@ def test_keyboardbuilder() -> typing.NoReturn:
 
     test_keyboard_1 = KeyboardBuilder(test_list_of_values_1)
     assert test_keyboard_1.list_of_values == test_list_of_values_1
-    assert test_keyboard_1.skip_cancel_buttons == [KeyboardButton(text='Skip'), KeyboardButton(text='Cancel')]
 
     test_table_buttons = test_keyboard_1.to_table_buttons(list_of_values=test_list_of_values_1, n_in_row=2)
     assert len(test_table_buttons) == 3
@@ -29,4 +28,3 @@ def test_keyboardbuilder() -> typing.NoReturn:
     assert isinstance(test_new_keyboard_1, ReplyKeyboardMarkup)
     assert len(test_new_keyboard_1.keyboard) == 4
     assert test_new_keyboard_1.resize_keyboard
-    assert test_new_keyboard_1.one_time_keyboard

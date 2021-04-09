@@ -11,12 +11,8 @@ class KeyboardBuilder:
     """
     def __init__(self, list_of_values: typing.List[typing.Any]):
         self.list_of_values = list_of_values
-        self.skip_cancel_buttons = [
-            KeyboardButton(text='Skip'),
-            KeyboardButton(text='Cancel')
-        ]
 
-    def create_new_keyboard(self) -> ReplyKeyboardMarkup:
+    def create_new_keyboard(self, need_skip=True) -> ReplyKeyboardMarkup:
         """
         Create new keyboard with your list of values and Skip&Cancel buttons.
 
@@ -27,10 +23,10 @@ class KeyboardBuilder:
             list_of_values = self.to_table_buttons(list_of_values=list_of_values,
                                                    n_in_row=2)
         keyboard = ReplyKeyboardMarkup(
-            keyboard=[*list_of_values, self.skip_cancel_buttons],
+            keyboard=[*list_of_values],
             resize_keyboard=True,
-            one_time_keyboard=True
         )
+        keyboard.add('Skip'*need_skip, 'Cancel')
         return keyboard
 
     @staticmethod
@@ -59,15 +55,15 @@ Board = TrelloBoard()
 board_lists = [board_list.list_name for board_list in Board.get_lists()]
 board_members = Board.get_memberships()
 Member = TrelloMember()
-member_names = [Member.get_member(board_member.member_id).member_fullname for board_member in board_members]
+member_names = Member.get_members_names()
 tags_colors = Board.get_labels()
 tags_colors = [label.cardlabel_color.title() for label in tags_colors]
 deadline_times = [1, 2, 5, 24, 48, 72, 96, 120]
 
 
 keyboard_empty = KeyboardBuilder([]).create_new_keyboard()
-keyboard_with_lists = KeyboardBuilder(board_lists).create_new_keyboard()
+keyboard_with_lists = KeyboardBuilder(board_lists).create_new_keyboard(need_skip=False)
 keyboard_with_members = KeyboardBuilder(member_names).create_new_keyboard()
 keyboard_with_tags = KeyboardBuilder(tags_colors).create_new_keyboard()
 keyboard_with_deadline = KeyboardBuilder(deadline_times).create_new_keyboard()
-keyboard_with_position = KeyboardBuilder(['top', 'bottom']).create_new_keyboard()
+keyboard_with_position = KeyboardBuilder(['top', 'bottom']).create_new_keyboard(need_skip=False)

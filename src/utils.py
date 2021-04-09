@@ -61,3 +61,70 @@ def reformat_and_post(query: typing.Dict[str, typing.Union[str, typing.List]]) -
     short_url = response.json().get('shortUrl')
 
     return response.status_code, short_url
+
+
+class ValidateAnswers:
+    @staticmethod
+    def validate_list(text: typing.Union[str]) -> bool:
+        """
+        Validate available lists
+
+        :param text: message.text from user
+        :return: bool
+        """
+        board_lists = [board_list.list_name for board_list in TrelloBoard().get_lists()]
+        board_lists += ['Skip']
+        return True if text in board_lists else False
+
+    @staticmethod
+    def validate_member(text: typing.Union[str]) -> bool:
+        """
+        Validate available member
+
+        :param text: message.text from user
+        :return: bool
+        """
+        member_names = TrelloMember().get_members_names()
+        member_names += ['Skip']
+        return True if text in member_names else False
+
+    @staticmethod
+    def validate_tags(text: typing.Union[str]) -> bool:
+        """
+        Validate available tag
+
+        :param text: message.text from user
+        :return: bool
+        """
+        board_tags = [label.cardlabel_color.title() for label in TrelloBoard().get_labels()]
+        board_tags += ['Skip']
+        return True if text in board_tags else False
+
+    @staticmethod
+    def validate_deadline(text: typing.Union[str]) -> bool:
+        """
+        Validate available deadline
+
+        :param text: message.text from user
+        :return: bool
+        """
+        if text.isnumeric():
+            return True
+        elif (text[-1] == 'h') & (text[:-1].isnumeric()):
+            return True
+        elif (text[-1] == 'd') & (text[:-1].isnumeric()):
+            return True
+        elif text == 'Skip':
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def validate_position(text: typing.Union[str]) -> bool:
+        """
+        Validate available position
+
+        :param text: message.text from user
+        :return: bool
+        """
+        return True if text in ['top', 'bottom', 'Skip'] else False
