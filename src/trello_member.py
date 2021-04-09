@@ -1,5 +1,6 @@
 import typing
 from src.trello_base import TrelloBase
+from src.trello_boards import TrelloBoard
 from src.trello_dataclasses import BoardMember
 
 
@@ -20,3 +21,15 @@ class TrelloMember(TrelloBase):
         member_data: BoardMember = BoardMember.parse_obj(response.json())
 
         return member_data
+
+    def get_members_names(self) -> typing.List[BoardMember]:
+        """
+        Get all members names
+
+        :return: List[BoardMember.full_name]
+        """
+        board = TrelloBoard()
+        board_memberships_id = [member.member_id for member in board.get_memberships()]
+        members_names = [self.get_member(member_id).member_fullname for member_id in board_memberships_id]
+
+        return members_names
