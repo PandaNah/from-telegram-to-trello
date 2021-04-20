@@ -20,5 +20,10 @@ class UnAuthorized(Exception):
 
 
 class ResourceUnavailable(Exception):
+    def __init__(self, _status):
+        super().__init__(f'Trello is unavailable now. Error: {_status}')
+
+
+class BadGetWay(Exception):
     def __init__(self):
-        super().__init__('Trello is unavailable now.')
+        super().__init__('Bad get way')

@@ -1,116 +1,236 @@
 import typing
+from random import choice
 
-from requests import Response
+import pytest
+from faker import Faker
 
 from src.trello_boards import TrelloBoard
 from src.trello_cards import TrelloCard
-from src.trello_dataclasses import BoardMembership, BoardList, BoardMember, TrelloCardBase, TrelloCardLabels
-from settings import trelloSettings
-from src.trello_lists import TrelloList
-from src.trello_member import TrelloMember
-from src.utils import ValidateAnswers
+from src.trello_dataclasses import SerializedCard
+from src.trello_dataclasses import SerializedCardLabels
+from src.trello_dataclasses import SerializedList
+from src.trello_dataclasses import SerializedMember
 
 
-def test_trelloboard() -> typing.NoReturn:
+class TestTrelloBoard:
     """
-    Tests for TrelloBoard
-
-    :return: NoReturn
+    Future description
     """
-    test_board = TrelloBoard()
-    assert test_board.primary_url == f'boards/{trelloSettings.BOARD_ID}/'
 
-    test_members = test_board.get_memberships()
-    assert isinstance(test_members, typing.List)
-    assert isinstance(test_members[0], BoardMembership)
+    @staticmethod
+    def get_test_list():
+        _b = TrelloBoard()
+        test_list_id = None
+        for _list in _b.get_lists():
+            if _list.name == 'TESTCASE1':
+                test_list_id = _list.list_id
+        if test_list_id:
+            return test_list_id
+        raise Exception
 
-    test_lists = test_board.get_lists()
-    assert isinstance(test_lists, typing.List)
-    assert isinstance(test_lists[0], BoardList)
+    @classmethod
+    @pytest.fixture()
+    def setup_list(cls):
+        _b = TrelloBoard()
+        for _list in _b.get_lists(list_filter='all'):
+            if _list.name == 'TESTCASE1':
+                if _list.closed:
+                    _b.archive_list(
+                        list_id=_list.list_id,
+                        archive=False,
+                    )
+                    break
+        else:
+            _b.create_list(
+                list_name='TESTCASE1',
+                list_pos='top',
+            )
 
-    test_cards = test_board.get_cards()
-    f = False
-    if not test_cards:
-        t = TrelloCard()
-        q = {'idList': '606d78d2c576327a2615dd01',
-             'name': '1'}
-        t.post_card(**q)
-        test_cards = test_board.get_cards()
-        f = True
-    assert isinstance(test_cards, typing.List)
-    assert isinstance(test_cards[0], TrelloCardBase)
-    if f:
-        for card in test_cards:
-            if card.card_header == q.get('name'):
-                card_to_remove = card.card_id
-        t.delete_card(card_id=card_to_remove)
+        yield
 
-    test_labels = test_board.get_labels()
-    assert isinstance(test_labels, typing.List)
-    assert isinstance(test_labels[0], TrelloCardLabels)
+        _b.archive_list(
+            list_id=cls.get_test_list(),
+            archive=True,
+        )
 
+    @classmethod
+    @pytest.fixture()
+    def setup_cards(cls):
+        fake = Faker()
+        _b = TrelloBoard()
+        _c = TrelloCard()
 
-def test_trellolist() -> typing.NoReturn:
-    """
-    Tests for TrelloList
+        test_list_id = cls.get_test_list()
+        to_remove_list = []
 
-    :return: NoReturn
-    """
-    test_list = TrelloList()
-    assert test_list.primary_url == 'lists/'
+        for _ in range(5):
+            test_case = {
+                'name': fake.name(),
+                'desc': fake.text(),
+                'pos': choice(['top', 'bottom']),
+                'due': fake.iso8601(),
+                'idList': test_list_id,
+                'idMembers': choice([
+                    user.member_id
+                    for user in _b.get_members()
+                ] + ['']),
+                'idLabels': choice([
+                    label.label_id
+                    for label in _b.get_labels()
+                ] + ['']),
+            }
 
-    list_id = TrelloBoard().get_lists()[0].list_id
-    test_board_list = test_list.get_list(list_id=list_id)
-    assert isinstance(test_board_list, BoardList)
+            r = _c.post_card(**test_case)
+            assert r.status_code == 200
+            to_remove_list.append(r.json().get('id'))
 
+        yield
 
-def test_trellomember() -> typing.NoReturn:
-    """
-    Tests for TrelloMember
+        for _ in to_remove_list:
+            _c.delete_card(card_id=_)
 
-    :return: NoReturn
-    """
-    test_member = TrelloMember()
-    assert test_member.primary_url == 'members/'
+    @classmethod
+    @pytest.fixture()
+    def setup_demons(cls):
+        fake = Faker()
+        _b = TrelloBoard()
 
-    member_id = TrelloBoard().get_memberships()[0].member_id
-    member = test_member.get_member(member_id=member_id)
-    assert isinstance(member, BoardMember)
+        to_remove_list = []
 
+        for _ in range(3):
+            _n = fake.name()
+            r = _b.invite_member(
+                email=fake.ascii_free_email(),
+                full_name=_n,
+            )
+            assert r.status_code == 200
+            to_remove_list.append(_n)
 
-def test_trellocard() -> typing.NoReturn:
-    """
-    Test for TrelloCard
+        yield
 
-    :return: NoReturn
-    """
-    test_cards = TrelloCard()
-    assert test_cards.primary_url == 'cards/'
+        _members = _b.get_members()
+        for _ in _members:
+            if _.fullName in to_remove_list:
+                to_remove_list[to_remove_list.index(_.fullName)] = _.member_id
 
-    test_query = {'idList': '606d78d2c576327a2615dd01',
-                  'name': '1',
-                  'desc': '2',
-                  'idMembers': ['6065a3598039446570cdda2a'],
-                  'idLabels': '6065a3a4184d2c731b7f0751',
-                  'due': '2021-04-07T18:43:00.000Z',
-                  'pos': 'bottom'}
+        for _ in to_remove_list:
+            _b.remove_member(member_id=_)
 
-    response = test_cards.post_card(**test_query)
-    assert isinstance(response, Response)
-    assert response.status_code in range(200, 300)
-    assert 'trello' in response.json().get('shortUrl')
+    @staticmethod
+    @pytest.fixture()
+    def setup_env() -> typing.List:
+        _b = TrelloBoard()
+        _c = TrelloCard()
+        return [_b, _c]
 
-    card_id = TrelloBoard().get_cards()[0].card_id
-    assert isinstance(card_id, str)
-    test_card = test_cards.get_card(card_id=card_id)
-    assert isinstance(test_card, TrelloCardBase)
+    @staticmethod
+    def test_get_members(setup_env, setup_demons):
+        _b, _ = setup_env
+        _demons = _b.get_members()
+        assert isinstance(_demons, typing.List)
+        assert isinstance(_demons[0], SerializedMember)
 
-    cards_on_board = TrelloBoard().get_cards()
-    for card in cards_on_board:
-        if card.card_header == test_query.get('name'):
-            card_to_remove = card.card_id
+    @staticmethod
+    def test_get_member(setup_env, setup_demons):
+        _b, _ = setup_env
+        _demons = _b.get_members()
+        r = _b.get_member(member_id=choice(_demons).member_id)
+        assert isinstance(r, SerializedMember)
 
-    response = test_cards.delete_card(card_id=card_to_remove)
-    assert response.status_code in range(200, 300)
-    cards_on_board = [card.card_id for card in TrelloBoard().get_cards()]
-    assert card_to_remove not in cards_on_board
+    @staticmethod
+    def test_get_lists(setup_env, setup_list):
+        _b, _ = setup_env
+        r = _b.get_lists()
+        assert isinstance(r, typing.List)
+        assert isinstance(r[0], SerializedList)
+
+    @staticmethod
+    def test_invite_remove_member(setup_env):
+        _b, _ = setup_env
+        fake = Faker()
+        _email = fake.ascii_free_email()
+        _name = fake.name()
+        r = _b.invite_member(
+            email=_email,
+            full_name=_name,
+        )
+        assert r.status_code == 200
+
+        _members = _b.get_members()
+        _remove_id = None
+
+        for _ in _members:
+            if _.fullName == _name:
+                _remove_id = _.member_id
+
+        assert _remove_id
+
+        r = _b.remove_member(member_id=_remove_id)
+
+        assert r.status_code == 200
+
+    @staticmethod
+    def test_create_list(setup_env):
+        _b, _ = setup_env
+        r = _b.create_list(
+            list_name='lyalya',
+            list_pos='bottom',
+        )
+        assert r.status_code == 200
+
+    @staticmethod
+    def test_archive_list(setup_env):
+        _b, _ = setup_env
+        _list_id = None
+        for _ in _b.get_lists():
+            if _.name == 'lyalya':
+                _list_id = _.list_id
+        r = _b.archive_list(list_id=_list_id)
+
+        assert r.status_code == 200
+
+    @staticmethod
+    def test_get_cards(setup_env, setup_list, setup_cards):
+        _b, _ = setup_env
+        r = _b.get_cards()
+        assert isinstance(r, typing.List)
+        assert isinstance(r[0], SerializedCard)
+
+    @staticmethod
+    def test_get_card(setup_env, setup_list, setup_cards):
+        _b, _ = setup_env
+        _cards = _b.get_cards()
+        _card = choice(_cards).card_id
+        r = _b.get_card(card_id=_card)
+
+        assert isinstance(r, SerializedCard)
+
+    @staticmethod
+    def test_get_labels(setup_env):
+        _b, _ = setup_env
+        r = _b.get_labels()
+
+        assert isinstance(r, typing.List)
+        assert isinstance(r[0], SerializedCardLabels)
+
+    @staticmethod
+    def test_create_label(setup_env):
+        _b, _ = setup_env
+        for _ in range(3):
+            r = _b.create_label(
+                label_name=_,
+                label_color=choice([_.color for _ in _b.get_labels()]),
+            )
+            assert r.status_code == 200
+
+    @staticmethod
+    def test_delete_label(setup_env):
+        _b, _ = setup_env
+        _labels = [
+            _.label_id for _ in _b.get_labels(
+            ) if _.name in map(str, range(3))
+        ]
+        for _ in _labels:
+            r = _b.delete_label(label_id=_)
+
+            assert r.status_code == 200

@@ -3,6 +3,8 @@ aiograph==0.2
 aiohttp~=3.7.4.post0
 APScheduler==3.7.0
 attrs==19.1.0
+
+Faker==8.0.0
 numpy==1.20.2
 pipdeptree==2.0.0
 pre-commit==2.12.0

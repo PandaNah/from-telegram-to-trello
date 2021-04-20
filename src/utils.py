@@ -1,15 +1,18 @@
 import typing
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from src.exceptions import WrongDateFormat
 from src.trello_boards import TrelloBoard
 from src.trello_cards import TrelloCard
-from src.trello_member import TrelloMember
 
 
-def reformat_and_post(query: typing.Dict[str, typing.Union[str, typing.List]]) -> typing.Tuple[int, str]:
+def reformat_and_post(
+        query: typing.Dict[str, typing.Union[str, typing.List]],
+) -> typing.Tuple[int, str]:
     """
-    Help function to modify dict with states from /new_task and post it to Trello
+    Help function to modify dict with
+    states from /new_task and post it to Trello
 
     :param query: Dictionary with states from /new_task
     :return: response.status_code, response.shortUrl
@@ -19,44 +22,44 @@ def reformat_and_post(query: typing.Dict[str, typing.Union[str, typing.List]]) -
         if value == 'Skip':
             query.update({key: ''})
     # Get columns and members from Trello
-    trello_board = TrelloBoard()
-    trello_board_lists = trello_board.get_lists()
-    trello_board_members = trello_board.get_memberships()
-    # Get members names and labels from board
-    trello_member = TrelloMember()
-    trello_members = [trello_member.get_member(member_id=member.member_id) for member in trello_board_members]
-    trello_labels = trello_board.get_labels()
+    board = TrelloBoard()
+    trello_board_lists = board.get_lists()
+    trello_board_members = board.get_members()
+    trello_board_labels = board.get_labels()
     # Swap list.name to list.id
-    if query.get('idList'):
+    if query.get('idList', None):
         for _ in trello_board_lists:
-            if _.list_name == query.get('idList'):
+            if _.name == query.get('idList'):
                 query.update({'idList': _.list_id})
     # Swap member.name to member.id
-    if query.get('idMembers'):
-        for _ in trello_members:
-            if _.member_fullname == query.get('idMembers'):
-                query['idMembers'] = [_.member_id]
+    if query.get('idMembers', None):
+        for _ in trello_board_members:
+            if _.fullName == query.get('idMembers'):
+                query.update({'idMembers': _.member_id})
     # Swap label color.name to color.id
-    if query.get('idLabels'):
-        for _ in trello_labels:
-            if _.cardlabel_color == query.get('idLabels').lower():
-                query.update({'idLabels': _.cardlabel_id})
+    if query.get('idLabels', None):
+        for _ in trello_board_labels:
+            if _.color == query.get('idLabels').lower():
+                query.update({'idLabels': _.label_id})
     # Set due
-    if query.get('due'):
-        _hours = datetime.now()
-        _users_hours = query.get('due')
-        if _users_hours.isnumeric():
-            _hours += timedelta(hours=int(_users_hours))
-        elif ('h' in _users_hours) & (_users_hours[:-1].isnumeric()):
-            _hours += timedelta(hours=int(_users_hours[:-1]))
-        elif ('d' in _users_hours) & (_users_hours[:-1].isnumeric()):
-            _hours += timedelta(days=int(_users_hours[:-1]))
+    if query.get('due', None):
+        current_datetime = datetime.now()
+        users_hours = query.get('due')
+        if users_hours.isnumeric():
+            current_datetime += timedelta(hours=int(users_hours))
+        elif ('h' in users_hours) & (users_hours[:-1].isnumeric()):
+            current_datetime += timedelta(hours=int(users_hours[:-1]))
+        elif ('d' in users_hours) & (users_hours[:-1].isnumeric()):
+            current_datetime += timedelta(days=int(users_hours[:-1]))
         else:
-            raise WrongDateFormat(_users_hours)
+            raise WrongDateFormat(users_hours)
 
-        query.update({'due': _hours.strftime('%Y-%m-%dT%H:%M:00.000Z')})
+        query.update(
+            {'due': current_datetime.strftime('%Y-%m-%dT%H:%M:00.000Z')},
+        )
     # Post query to Trello
     client = TrelloCard()
+    print(query)
     response = client.post_card(**query)
     short_url = response.json().get('shortUrl')
 
@@ -72,8 +75,9 @@ class ValidateAnswers:
         :param text: message.text from user
         :return: bool
         """
-        board_lists = [board_list.list_name for board_list in TrelloBoard().get_lists()]
-        board_lists += ['Skip']
+        board_lists = [
+            board_list.name for board_list in TrelloBoard().get_lists()
+        ] + ['Skip']
         return True if text in board_lists else False
 
     @staticmethod
@@ -84,8 +88,9 @@ class ValidateAnswers:
         :param text: message.text from user
         :return: bool
         """
-        member_names = TrelloMember().get_members_names()
-        member_names += ['Skip']
+        member_names = [
+            member.fullName for member in TrelloBoard().get_members()
+        ] + ['Skip']
         return True if text in member_names else False
 
     @staticmethod
@@ -96,8 +101,10 @@ class ValidateAnswers:
         :param text: message.text from user
         :return: bool
         """
-        board_tags = [label.cardlabel_color.title() for label in TrelloBoard().get_labels()]
-        board_tags += ['Skip']
+        board_tags = [
+            label.color.title()
+            for label in TrelloBoard().get_labels()
+        ] + ['Skip']
         return True if text in board_tags else False
 
     @staticmethod

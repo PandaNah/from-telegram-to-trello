@@ -7,6 +7,7 @@ import requests
 from requests import Response
 
 from settings import trelloSettings
+from src.exceptions import BadGetWay
 from src.exceptions import ResourceUnavailable
 from src.exceptions import UnAuthorized
 from src.exceptions import WrongCallMethod
@@ -22,13 +23,13 @@ class TrelloBase(ABC):
         })
 
     def make_response(
-        self,
-        call_method: str,
-        primary_url: str,
-        secondary_url: typing.Optional[str] = None,
-        secondary_params: OrderedDict = None,
-        is_headers: bool = True,
-        is_params: bool = True,
+            self,
+            call_method: str,
+            primary_url: str,
+            secondary_url: typing.Optional[str] = None,
+            secondary_params: OrderedDict = None,
+            is_headers: bool = True,
+            is_params: bool = True,
     ) -> Response:
         """
         Base function to make get response form trello
@@ -60,10 +61,13 @@ class TrelloBase(ABC):
             headers=_final_headers,
             params=_final_params,
         )
+        _status = response.status_code
         # Check status code
-        if response.status_code == 401:
+        if _status == 401:
             raise UnAuthorized
-        if response.status_code != 200:
-            raise ResourceUnavailable
+        if _status == 404:
+            raise BadGetWay
+        if _status != 200:
+            raise ResourceUnavailable(_status)
 
         return response
