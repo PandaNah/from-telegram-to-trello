@@ -29,7 +29,7 @@ class KeyboardBuilder:
                 n_in_row=2,
             )
         keyboard = ReplyKeyboardMarkup(
-            keyboard=[*list_of_values],
+            keyboard=list_of_values,
             resize_keyboard=True,
         )
         keyboard.add('Skip' * need_skip, 'Cancel')
