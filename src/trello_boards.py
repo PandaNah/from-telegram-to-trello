@@ -16,7 +16,77 @@ class TrelloBoard(TrelloBase):
         super().__init__()
         self.primary_url = f'boards/{trelloSettings.BOARD_ID}/'
 
-    def get_member(self, member_id: typing.AnyStr):
+    def create_board(self, **kwargs) -> Response:
+        """
+        Create a new board.
+
+        possible request params:
+            - name: The new name for the board.
+            - defaultLabels: Determines whether to use the
+                default set of labels.
+            - defaultLists: Determines whether to add the default
+                            set of lists to a board (To Do, Doing, Done).
+            - desc: A new description for the board.
+            - idOrganization: The id or name of the Workspace
+                the board should belong to.
+            - idBoardSource: The id of a board to copy into the new board.
+            - keepFromSource: To keep cards from
+                the original board pass in the value cards.
+            - powerUps: The Power-Ups that should be enabled on the new board.
+                        One of: all, calendar, cardAging, recap, voting.
+            - prefs_permissionLevel: The permissions level of the board.
+                                     One of: org, private, public.
+            - prefs_voting: Who can vote on this board.
+                            One of disabled, members, observers, org, public.
+            - prefs_comments: Who can comment on cards on this board.
+                One of: disabled, members,
+                observers, org, public.
+            - prefs_invitations: Determines what
+                types of members can invite users to join.
+                One of: admins, members.
+            - prefs_selfJoin: Determines whether users can
+                join the boards themselves
+                or whether they have to be invited.
+            - prefs_cardCovers: Determines whether card covers are enabled.
+            - prefs_background: The id of a custom background or one of:
+                blue, orange, green, red,
+                purple, pink, lime, sky, grey.
+            - prefs_cardAging: Determines the type of card aging
+                that should take place
+                on the board if card aging is enabled.
+                One of: pirate, regular.
+
+            :return: Response
+        """
+        if 'name' not in kwargs.keys():
+            raise NotImplementedError('Should contains param: "name"!')
+
+        secondary_params = OrderedDict(kwargs)
+        response = self.make_response(
+            call_method='POST',
+            primary_url='boards/',
+            secondary_params=secondary_params,
+        )
+
+        return response
+
+    def delete_board(self, board_id: str) -> Response:
+        """
+        Delete a Board
+
+        :param board_id: Board ID to remove
+        :return: Response
+        """
+        response = self.make_response(
+            call_method='DELETE',
+            primary_url='boards/',
+            secondary_url=board_id,
+            is_headers=False,
+        )
+
+        return response
+
+    def get_member(self, member_id: typing.AnyStr) -> SerializedMember:
         """
         Get a member by member_id
 
@@ -33,7 +103,7 @@ class TrelloBoard(TrelloBase):
 
         return member_data
 
-    def get_members(self):
+    def get_members(self) -> typing.List[SerializedMember]:
         """
         Get the Members for a board
 
