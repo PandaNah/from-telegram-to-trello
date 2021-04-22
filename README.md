@@ -1,2 +1,2 @@
 # from-telegram-to-trello
-aiogram+trello_api+db
+aiogram+trello_api
