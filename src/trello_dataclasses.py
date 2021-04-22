@@ -10,6 +10,7 @@ class SerializedMember(BaseModel):
     fullName: typing.Optional[str]
     url: typing.Optional[str]
     username: typing.Optional[str]
+    avatarUrl: typing.Optional[str]
 
 
 class SerializedList(BaseModel):

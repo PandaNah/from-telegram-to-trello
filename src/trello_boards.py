@@ -190,7 +190,7 @@ class TrelloBoard(TrelloBase):
 
     def get_cards(
             self,
-            card_filter: typing.Optional[str] = 'all',
+            card_filter: typing.Optional[str] = 'open',
     ) -> typing.List[SerializedCard]:
         """
         Get cards on a board
@@ -272,3 +272,8 @@ class TrelloBoard(TrelloBase):
         )
 
         return response
+
+
+if __name__ == '__main__':
+    t = TrelloBoard()
+    cards = t.get_cards()
