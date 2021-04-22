@@ -135,3 +135,40 @@ class ValidateAnswers:
         :return: bool
         """
         return True if text in ['top', 'bottom', 'Skip'] else False
+
+
+def get_users_list() -> typing.List:
+    """
+    Get all users on the board
+
+    :return: list of users
+    """
+    board = TrelloBoard()
+    users_list = board.get_members()
+    return users_list
+
+
+def get_board_lists() -> typing.List:
+    """
+    Get open lists on the board
+
+    :return: list of lists
+    """
+    board = TrelloBoard()
+    lists_list = board.get_lists()
+    return lists_list
+
+
+def get_cards_list(list_id: str, card_filter: str = 'open') -> typing.List:
+    """
+    Get Open cards in list_id
+
+    :return: list of cards
+    """
+    board = TrelloBoard()
+    cards_list = board.get_cards(card_filter=card_filter)
+    cards_list = [card for card in cards_list if card.idList == list_id]
+    for card in cards_list:
+        if card.name == '':
+            card.name = 'Empty'
+    return cards_list
