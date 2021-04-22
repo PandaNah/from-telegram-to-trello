@@ -272,8 +272,3 @@ class TrelloBoard(TrelloBase):
         )
 
         return response
-
-
-if __name__ == '__main__':
-    t = TrelloBoard()
-    cards = t.get_cards()
